@@ -25,20 +25,22 @@ class TestBooksCollector:
 
     #Проверяем, что у добавленной книги нет жанра
     def test_add_new_book_one_book_has_no_genre(self, collector):
-        collector.add_new_book('Гордость и предубеждение и зомби')
-        assert collector.books_genre['Гордость и предубеждение и зомби'] == ''
+        book_title = 'Гордость и предубеждение и зомби'
+        collector.add_new_book(book_title)
+        assert collector.get_book_genre(book_title) == ''
 
     #Проверяем, что нельзя добавить новую книгу с названием более 40 символов
     def test_add_new_book_name_of_book_over_40_symb_not_added(self, collector):
         collector.add_new_book('Гордость и предубеждение и зомби')
         collector.add_new_book('Гордость и предубеждение и зомби. Гордость и предубеждение и зомби')
-        assert len(collector.books_genre) == 1
+        books_dict = collector.get_books_genre()
+        assert len(books_dict) == 1
 
     #Проверяем, что необходимый жанр добавился
     def test_set_book_genre_one_book_genre_is_added(self, collector):
         collector.add_new_book('Восточный экспресс')
         collector.set_book_genre('Восточный экспресс', 'Детективы')
-        assert collector.books_genre['Восточный экспресс'] == 'Детективы'
+        assert collector.get_book_genre('Восточный экспресс') == 'Детективы'
 
     #Проверяем, что по имени можно получить(найти) жанр
     def test_get_book_genre_one_book_got_genre(self, collector):
@@ -78,16 +80,18 @@ class TestBooksCollector:
         collector.add_new_book('Восточный экспресс')
         collector.add_new_book('Десять негретят')
         collector.add_book_in_favorites('Восточный экспресс')
-        assert 'Восточный экспресс' in collector.favorites
+        favorites_list = collector.get_list_of_favorites_books()
+        assert 'Восточный экспресс' in favorites_list
+        assert len(favorites_list) == 1
 
     #Проверяем, что можно удалить книгу из избранного
     def test_delete_book_from_favorites_was_deleted_one_book(self, collector):
-        collector.add_new_book('Гордость и предубеждение и зомби')
-        collector.add_new_book('Восточный экспресс')
-        collector.add_new_book('Десять негретят')
-        collector.add_book_in_favorites('Восточный экспресс')
-        collector.delete_book_from_favorites('Восточный экспресс')
-        assert len(collector.favorites) == 0
+       collector.add_new_book('Гордость и предубеждение и зомби')
+       collector.add_new_book('Восточный экспресс')
+       collector.add_new_book('Десять негритят')
+       collector.add_book_in_favorites('Восточный экспресс')
+       collector.delete_book_from_favorites('Восточный экспресс')
+       assert len(collector.get_list_of_favorites_books()) == 0
 
     # Проверяем, что можно получить список избранных книг
     def test_get_list_of_favorites_books_got_list(self, collector):
