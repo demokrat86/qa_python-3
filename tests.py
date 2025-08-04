@@ -1,5 +1,5 @@
 from main import BooksCollector
-
+import pytest  # ВАЖНО: эта строка должна быть в начале файла
 # класс TestBooksCollector объединяет набор тестов, которыми мы покрываем наше приложение BooksCollector
 # обязательно указывать префикс Test
 class TestBooksCollector:
@@ -18,7 +18,97 @@ class TestBooksCollector:
 
         # проверяем, что добавилось именно две
         # словарь books_rating, который нам возвращает метод get_books_rating, имеет длину 2
-        assert len(collector.get_books_rating()) == 2
+        assert len(collector.get_books_genre()) == 2
 
     # напиши свои тесты ниже
     # чтобы тесты были независимыми в каждом из них создавай отдельный экземпляр класса BooksCollector()
+
+    #Проверяем, что у добавленной книги нет жанра (добавлена параметризация)
+    @pytest.mark.parametrize("book_title", [
+        "Гордость и предубеждение и зомби",
+        "Война и мир",
+        "1984"
+    ])
+    def test_add_new_book_one_book_has_no_genre(self, book_title):
+        collector = BooksCollector()
+        collector.add_new_book(book_title)
+        assert collector.get_book_genre(book_title) == ''
+
+    #Проверяем, что нельзя добавить новую книгу с названием более 40 символов (добавлена параметризация)
+    @pytest.mark.parametrize("long_book_title", [
+        "Гордость и предубеждение и зомби. Гордость и предубеждение и зомби",
+        "Очень длинное название книги, которое точно превышает сорок символов",
+        "А это тоже очень длинное название книги для теста максимальной длины"
+    ])
+    def test_add_new_book_name_of_book_over_40_symb_not_added(self, long_book_title):
+        collector = BooksCollector()
+        collector.add_new_book('Гордость и предубеждение и зомби')
+        collector.add_new_book(long_book_title)
+        books_dict = collector.get_books_genre()
+        assert len(books_dict) == 1
+
+    #Проверяем, что необходимый жанр добавился
+    def test_set_book_genre_one_book_genre_is_added(self, collector):
+        collector.add_new_book('Восточный экспресс')
+        collector.set_book_genre('Восточный экспресс', 'Детективы')
+        assert collector.get_book_genre('Восточный экспресс') == 'Детективы'
+
+    #Проверяем, что по имени можно получить(найти) жанр
+    def test_get_book_genre_one_book_got_genre(self, collector):
+        collector.add_new_book('Восточный экспресс')
+        collector.set_book_genre('Восточный экспресс', 'Детективы')
+        assert collector.get_book_genre('Восточный экспресс') == 'Детективы'
+
+    #Проверяем, что можно вывести список книг по специфичноум жанру
+    def test_get_books_with_specific_genre_two_book_got_detective_genre(self, collector):
+        collector.add_new_book('Гордость и предубеждение и зомби')
+        collector.set_book_genre('Гордость и предубеждение и зомби', 'Ужасы')
+        collector.add_new_book('Восточный экспресс')
+        collector.set_book_genre('Восточный экспресс', 'Детективы')
+        collector.add_new_book('Десять негретят')
+        collector.set_book_genre('Десять негретят', 'Детективы')
+        assert collector.get_books_with_specific_genre('Детективы') == ['Восточный экспресс', 'Десять негретят']
+    
+    # Проверяем, что можно получить список книг, который состоит из двух книг
+    def test_get_books_genre_of_two_books(self, collector):
+        collector.add_new_book('Гордость и предубеждение и зомби')
+        collector.set_book_genre('Гордость и предубеждение и зомби', 'Ужасы')
+        collector.add_new_book('Восточный экспресс')
+        collector.set_book_genre('Восточный экспресс', 'Детективы')
+        assert collector.get_books_genre() == {'Гордость и предубеждение и зомби' : 'Ужасы', 'Восточный экспресс' : 'Детективы'}
+
+    # Проверяем, что можно получить список разрешенный детям
+    def test_get_books_for_children_two_books_got_one_book_mult(self, collector):
+        collector.add_new_book('Золушка')
+        collector.set_book_genre('Золушка', 'Мультфильмы')
+        collector.add_new_book('Восточный экспресс')
+        collector.set_book_genre('Восточный экспреcc', 'Детективы')
+        assert collector.get_books_for_children() == ['Золушка']
+
+    # Проверяем, что можно добавить книгу в избранное
+    def test_add_book_in_favorites_one_book_added_to_favorite(self, collector):
+        collector.add_new_book('Гордость и предубеждение и зомби')
+        collector.add_new_book('Восточный экспресс')
+        collector.add_new_book('Десять негретят')
+        collector.add_book_in_favorites('Восточный экспресс')
+        favorites_list = collector.get_list_of_favorites_books()
+        assert 'Восточный экспресс' in favorites_list
+        assert len(favorites_list) == 1
+
+    #Проверяем, что можно удалить книгу из избранного
+    def test_delete_book_from_favorites_was_deleted_one_book(self, collector):
+       collector.add_new_book('Гордость и предубеждение и зомби')
+       collector.add_new_book('Восточный экспресс')
+       collector.add_new_book('Десять негритят')
+       collector.add_book_in_favorites('Восточный экспресс')
+       collector.delete_book_from_favorites('Восточный экспресс')
+       assert len(collector.get_list_of_favorites_books()) == 0
+
+    # Проверяем, что можно получить список избранных книг
+    def test_get_list_of_favorites_books_got_list(self, collector):
+        collector.add_new_book('Гордость и предубеждение и зомби')
+        collector.add_new_book('Восточный экспресс')
+        collector.add_new_book('Десять негретят')
+        collector.add_book_in_favorites('Восточный экспресс')
+        collector.add_book_in_favorites('Десять негретят')
+        assert collector.get_list_of_favorites_books() == ['Восточный экспресс', 'Десять негретят']
