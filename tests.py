@@ -1,5 +1,5 @@
 from main import BooksCollector
-
+import pytest  # ВАЖНО: эта строка должна быть в начале файла
 # класс TestBooksCollector объединяет набор тестов, которыми мы покрываем наше приложение BooksCollector
 # обязательно указывать префикс Test
 class TestBooksCollector:
@@ -23,16 +23,27 @@ class TestBooksCollector:
     # напиши свои тесты ниже
     # чтобы тесты были независимыми в каждом из них создавай отдельный экземпляр класса BooksCollector()
 
-    #Проверяем, что у добавленной книги нет жанра
-    def test_add_new_book_one_book_has_no_genre(self, collector):
-        book_title = 'Гордость и предубеждение и зомби'
+    #Проверяем, что у добавленной книги нет жанра (добавлена параметризация)
+    @pytest.mark.parametrize("book_title", [
+        "Гордость и предубеждение и зомби",
+        "Война и мир",
+        "1984"
+    ])
+    def test_add_new_book_one_book_has_no_genre(self, book_title):
+        collector = BooksCollector()
         collector.add_new_book(book_title)
         assert collector.get_book_genre(book_title) == ''
 
-    #Проверяем, что нельзя добавить новую книгу с названием более 40 символов
-    def test_add_new_book_name_of_book_over_40_symb_not_added(self, collector):
+    #Проверяем, что нельзя добавить новую книгу с названием более 40 символов (добавлена параметризация)
+    @pytest.mark.parametrize("long_book_title", [
+        "Гордость и предубеждение и зомби. Гордость и предубеждение и зомби",
+        "Очень длинное название книги, которое точно превышает сорок символов",
+        "А это тоже очень длинное название книги для теста максимальной длины"
+    ])
+    def test_add_new_book_name_of_book_over_40_symb_not_added(self, long_book_title):
+        collector = BooksCollector()
         collector.add_new_book('Гордость и предубеждение и зомби')
-        collector.add_new_book('Гордость и предубеждение и зомби. Гордость и предубеждение и зомби')
+        collector.add_new_book(long_book_title)
         books_dict = collector.get_books_genre()
         assert len(books_dict) == 1
 
